@@ -267,7 +267,7 @@ class SparseGlobalMaxOrAvgPool(SparseModule):
         counts_cpu_np = counts_cpu.numpy()
         res_features_list: List[torch.Tensor] = []
         for i in range(input.batch_size):
-            real_inds = out_indices[i, :counts_cpu_np[i]]
+            real_inds = out_indices[i, :counts_cpu_np[i]].long()
             real_features = input.features[real_inds]
             if self.is_mean:
                 real_features_reduced = torch.mean(real_features, dim=0)[0]
@@ -276,7 +276,7 @@ class SparseGlobalMaxOrAvgPool(SparseModule):
             res_features_list.append(real_features_reduced)
         res = torch.stack(res_features_list)
         return res 
-    
+
 class SparseGlobalAvgPool(SparseGlobalMaxOrAvgPool):
     def __init__(self, name=None):
         super(SparseGlobalAvgPool, self).__init__(is_mean=True, name=name)
