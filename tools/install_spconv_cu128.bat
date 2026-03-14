@@ -44,11 +44,11 @@ ECHO [INFO] Activating MSVC environment for spconv ...
 call tools\msvc_setup.bat
 ECHO [INFO] Building spconv-gpu from source ...
 python -m build --wheel --skip-dependency-check --no-isolation >NUL 2>&1
-if EXIST dist\*.whl (
-    for %%F in (dist\*.whl) do pip install "%%F" >NUL 2>&1
+IF EXIST dist\*.whl (
+    FOR %%F IN (dist\*.whl) DO pip install "%%F" >NUL 2>&1
     CD ..
     ECHO [DONE] spconv-gpu built and installed. ✅
-) else (
+) ELSE (
     ECHO.
     ECHO [FAIL] spconv-gpu build did not success! ❌
     GOTO BUILDFAIL
