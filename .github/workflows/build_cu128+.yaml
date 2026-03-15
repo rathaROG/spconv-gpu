@@ -91,12 +91,12 @@ jobs:
         run: |
           $Env:CUMM_CUDA_ARCH_LIST = "all"
           $Env:SPCONV_DISABLE_JIT = "1"
+          $Env:PIP_EXTRA_INDEX_URL = "https://ratharog.github.io/cumm-spconv/"
           python -m pip install pccm pybind11
-          python -m pip install cumm-cu128 --extra-index-url https://ratharog.github.io/cumm-spconv/
           # download boost header only
           $Env:BOOST_ROOT = "$HOME/boost/boost_1_77_0"
           # ls "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v${{ matrix.cuda-version }}\include\thrust"
-          python -m build --wheel --no-isolation --skip-dependency-check --outdir dist/ .
+          python -m build --wheel --outdir dist/ .
         shell: powershell
 
       - name: Archive wheel
