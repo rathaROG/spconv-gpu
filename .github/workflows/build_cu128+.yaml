@@ -43,7 +43,7 @@ jobs:
         shell: powershell
         run: |
           $ProgressPreference = 'SilentlyContinue'
-          Invoke-WebRequest -Uri "https://boostorg.jfrog.io/artifactory/main/release/1.77.0/source/boost_1_77_0.zip" -UseBasicParsing -OutFile $HOME/boost.zip
+          Invoke-WebRequest -Uri "https://archives.boost.io/release/1.77.0/source/boost_1_77_0.zip" -UseBasicParsing -OutFile $HOME/boost.zip
           Expand-Archive $HOME/boost.zip -DestinationPath $HOME/boost
 
       - name: Install CUDA
@@ -91,17 +91,18 @@ jobs:
         run: |
           $Env:CUMM_CUDA_ARCH_LIST = "all"
           $Env:SPCONV_DISABLE_JIT = "1"
-          pip install pccm pybind11
+          python -m pip install pccm pybind11
+          python -m pip install cumm-cu128 --extra-index-url https://ratharog.github.io/cumm-spconv/
           # download boost header only
           $Env:BOOST_ROOT = "$HOME/boost/boost_1_77_0"
           # ls "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v${{ matrix.cuda-version }}\include\thrust"
-          python -m build --wheel --outdir dist/ .
+          python -m build --wheel --no-isolation --skip-dependency-check --outdir dist/ .
         shell: powershell
 
       - name: Archive wheel
         uses: actions/upload-artifact@v6
         with:
-          name: windows-wheel-${{ matrix.python-version }}-${{ matrix.cuda-version }}
+          name: windows-wheels-${{ matrix.python-version }}-${{ matrix.cuda-version }}
           path: dist/*.whl
 
   build-linux:
@@ -138,7 +139,7 @@ jobs:
           python -m pip install --upgrade pip twine wheel
           python -m pip install pytest setuptools
           mkdir -p third_party
-          wget https://boostorg.jfrog.io/artifactory/main/release/1.77.0/source/$BOOST_VERSION.zip -O third_party/boost.zip
+          wget https://archives.boost.io/release/1.77.0/source/$BOOST_VERSION.zip -O third_party/boost.zip
           unzip third_party/boost.zip -d third_party/boost
 
       - name: Build a cuda wheel
@@ -189,5 +190,5 @@ jobs:
       - name: Archive wheel
         uses: actions/upload-artifact@v6
         with:
-          name: linux-wheel-${{ matrix.python-version }}-${{ matrix.cuda-version }}
+          name: linux-wheels-${{ matrix.python-version }}-${{ matrix.cuda-version }}
           path: dist/*.whl
