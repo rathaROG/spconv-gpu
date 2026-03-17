@@ -31,6 +31,7 @@ export CUMM_CUDA_VERSION="13.0"
 export CUMM_CUDA_ARCH_LIST="all"
 export CUMM_DISABLE_JIT="1"
 export SPCONV_DISABLE_JIT="1"
+export PIP_EXTRA_INDEX_URL="https://ratharog.github.io/cumm-spconv/"
 pip install git+https://github.com/rathaROG/spconv-gpu.git
 ```
 
@@ -39,11 +40,12 @@ pip install git+https://github.com/rathaROG/spconv-gpu.git
 ```cmd
 git clone https://github.com/rathaROG/spconv-gpu.git
 spconv-gpu\tools\msvc_setup.bat
-RMDIR /s /q cumm-gpu
+RMDIR /s /q spconv-gpu
 SET CUMM_CUDA_VERSION=13.0
 SET CUMM_CUDA_ARCH_LIST=all
 SET CUMM_DISABLE_JIT=1
 SET SPCONV_DISABLE_JIT=1
+SET PIP_EXTRA_INDEX_URL=https://ratharog.github.io/cumm-spconv/
 pip install git+https://github.com/rathaROG/spconv-gpu.git
 ```
 
