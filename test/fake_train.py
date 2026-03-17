@@ -1,3 +1,5 @@
+# Modified by rathaROG in 2026.
+
 import time
 from pathlib import Path
 
