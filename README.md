@@ -8,12 +8,13 @@ Before you install, you must uninstall all existing versions to avoid conflicts:
 
 ```bash
 pip uninstall -y spconv spconv-cu130 spconv-cu128 spconv-cu126 spconv-cu121 
+pip uninstall -y cumm cumm-cu130 cumm-cu128 cumm-cu126 cumm-cu121 
 ```
 
 For easy installation using prebuilt wheels (example for CUDA 13.0):
 
 ```bash
-pip install spconv-cu130 --extra-index-url https://ratharog.github.io/cumm-spconv/
+pip install cumm-cu130 spconv-cu130 --extra-index-url https://ratharog.github.io/cumm-spconv/
 ```
 
 See [ratharog.github.io/cumm-spconv](https://ratharog.github.io/cumm-spconv/) for prebuilt wheel info and supported CUDA versions.
