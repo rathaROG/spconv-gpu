@@ -15,7 +15,7 @@ jobs:
         cuda-version: ['12.8', '13.0']
     steps:
       - uses: actions/checkout@v6
-      - uses: dorny/paths-filter@v2
+      - uses: dorny/paths-filter@v4
         id: changes
         with:
           filters: |
@@ -33,8 +33,8 @@ jobs:
           cuda: ${{ matrix.cuda-version }}
           BOOST_VERSION: boost_1_77_0
         if: |
-          (github.event_name == 'push' && (startsWith(github.ref, 'refs/tags'))) || 
-          ((steps.changes.outputs.needbuild == 'true') && (env.PYTHON_VERSION == '3.14'))
+          (github.event_name == 'push' && startsWith(github.ref, 'refs/tags')) || 
+          (steps.changes.outputs.needbuild == 'true' && env.PYTHON_VERSION == '3.14')
         shell: powershell
         run: |
           $ProgressPreference = 'SilentlyContinue'
@@ -46,8 +46,8 @@ jobs:
           PYTHON_VERSION: ${{ matrix.python-version }}
           cuda: ${{ matrix.cuda-version }}
         if: |
-            (github.event_name == 'push' && (startsWith(github.ref, 'refs/tags'))) || 
-            ((steps.changes.outputs.needbuild == 'true') && (env.PYTHON_VERSION == '3.14'))
+            (github.event_name == 'push' && startsWith(github.ref, 'refs/tags')) || 
+            (steps.changes.outputs.needbuild == 'true' && env.PYTHON_VERSION == '3.14')
         shell: powershell
         run: |
           .\tools\install_windows_cuda.ps1
@@ -59,17 +59,17 @@ jobs:
       - name: Install pep build
         run: |
           python -m pip install build --user
-          python -m pip install --upgrade pip twine wheel
-          python -m pip install pytest setuptools
-      - name: Build a windows binary wheel
+          python -m pip install --upgrade pip wheel setuptools
+          # python -m pip install --upgrade twine pytest
+      - name: Build wheel
         env:
           CUDA_VERSION: ${{ matrix.cuda-version }}
           PYTHON_VERSION: ${{ matrix.python-version }}
           BOOST_VERSION: boost_1_77_0
           CUMM_CUDA_VERSION: ${{ matrix.cuda-version }}
         if: |
-          (github.event_name == 'push' && (startsWith(github.ref, 'refs/tags'))) || 
-          ((steps.changes.outputs.needbuild == 'true') && (env.PYTHON_VERSION == '3.14'))
+          (github.event_name == 'push' && startsWith(github.ref, 'refs/tags')) || 
+          (steps.changes.outputs.needbuild == 'true' && env.PYTHON_VERSION == '3.14')
         run: |
           $Env:CUMM_CUDA_ARCH_LIST = "all"
           $Env:SPCONV_DISABLE_JIT = "1"
@@ -78,8 +78,8 @@ jobs:
           $Env:BOOST_ROOT = "$HOME/boost/boost_1_77_0"
           python -m build --wheel --outdir dist/ .
         shell: powershell
-      - name: Archive wheel
-        uses: actions/upload-artifact@v6
+      - name: Archive wheels
+        uses: actions/upload-artifact@v7
         with:
           name: windows-wheels-${{ matrix.python-version }}-${{ matrix.cuda-version }}
           path: dist/*.whl
@@ -100,7 +100,7 @@ jobs:
           sudo rm -rf /usr/local/share/powershell
           sudo rm -rf /usr/local/share/chromium
           docker system prune -af
-      - uses: dorny/paths-filter@v2
+      - uses: dorny/paths-filter@v4
         id: changes
         with:
           filters: |
@@ -120,12 +120,12 @@ jobs:
           BOOST_VERSION: boost_1_77_0
         run: |
           python -m pip install build --user
-          python -m pip install --upgrade pip twine wheel
-          python -m pip install pytest setuptools
+          python -m pip install --upgrade pip wheel setuptools
+          # python -m pip install --upgrade twine pytest
           mkdir -p third_party
           wget https://archives.boost.io/release/1.77.0/source/$BOOST_VERSION.zip -O third_party/boost.zip
           unzip third_party/boost.zip -d third_party/boost
-      - name: Build a cuda wheel
+      - name: Build CUDA wheel
         env:
           CUDA_VERSION: ${{ matrix.cuda-version }}
           PYTHON_VERSION: ${{ matrix.python-version }}
@@ -133,9 +133,9 @@ jobs:
           PLAT: ${{ matrix.cuda-version == '128' && 'manylinux_2_28_x86_64' || 'manylinux2014_x86_64' }}
           BOOST_VERSION: boost_1_77_0
         if: |
-          (env.CUDA_VERSION != '') && (
-            (github.event_name == 'push' && (startsWith(github.ref, 'refs/tags'))) || 
-            ((steps.changes.outputs.needbuild == 'true') && (env.PYTHON_VERSION == '3.14'))
+          env.CUDA_VERSION != '' && (
+            (github.event_name == 'push' && startsWith(github.ref, 'refs/tags')) || 
+            (steps.changes.outputs.needbuild == 'true' && env.PYTHON_VERSION == '3.14')
           )
         run: |
           chmod +x tools/build-wheels.sh
@@ -150,7 +150,7 @@ jobs:
               source /etc/bashrc
               /io/tools/build-wheels.sh
             "
-      - name: Build a cpu wheel
+      - name: Build CPU wheel
         env:
           CUDA_VERSION: ${{ matrix.cuda-version }}
           PYTHON_VERSION: ${{ matrix.python-version }}
@@ -158,9 +158,9 @@ jobs:
           PLAT: manylinux2014_x86_64
           BOOST_VERSION: boost_1_77_0
         if: |
-          (env.CUDA_VERSION == '') && (
-            (github.event_name == 'push' && (startsWith(github.ref, 'refs/tags'))) || 
-            ((steps.changes.outputs.needbuild == 'true') && (env.PYTHON_VERSION == '3.14'))
+          env.CUDA_VERSION == '' && (
+            (github.event_name == 'push' && startsWith(github.ref, 'refs/tags')) || 
+            (steps.changes.outputs.needbuild == 'true' && env.PYTHON_VERSION == '3.14')
           )
         run: |
           chmod +x tools/build-wheels.sh
@@ -175,8 +175,8 @@ jobs:
               source /etc/bashrc
               /io/tools/build-wheels.sh
             "
-      - name: Archive wheel
-        uses: actions/upload-artifact@v6
+      - name: Archive wheels
+        uses: actions/upload-artifact@v7
         with:
           name: linux-wheels-${{ matrix.python-version }}-${{ matrix.cuda-version }}
           path: dist/*.whl
@@ -197,7 +197,7 @@ jobs:
           sudo rm -rf /usr/local/share/powershell
           sudo rm -rf /usr/local/share/chromium
           docker system prune -af
-      - uses: dorny/paths-filter@v2
+      - uses: dorny/paths-filter@v4
         id: changes
         with:
           filters: |
@@ -217,24 +217,24 @@ jobs:
           BOOST_VERSION: boost_1_77_0
         run: |
           python -m pip install build --user
-          python -m pip install --upgrade pip twine wheel
-          python -m pip install pytest setuptools
+          python -m pip install --upgrade pip wheel setuptools
+          # python -m pip install --upgrade twine pytest
           mkdir -p third_party
           wget https://archives.boost.io/release/1.77.0/source/$BOOST_VERSION.zip -O third_party/boost.zip
           unzip third_party/boost.zip -d third_party/boost
-      - name: Build manylinux_2_28 + CUDA 13.0 image
+      - name: Build manylinux_2_28 cu${{ matrix.cuda-version }} image
         run: |
           docker build -t manylinux_2_28-cu${{ matrix.cuda-version }} \
             -f .github/docker/Dockerfile.manylinux_2_28_cu${{ matrix.cuda-version }} .
-      - name: Build a cuda wheel
+      - name: Build CUDA wheel
         env:
           CUDA_VERSION: ${{ matrix.cuda-version }}
           PYTHON_VERSION: ${{ matrix.python-version }}
           PLAT: manylinux_2_28_x86_64
           BOOST_VERSION: boost_1_77_0
         if: |
-          (github.event_name == 'push' && (startsWith(github.ref, 'refs/tags'))) || 
-          ((steps.changes.outputs.needbuild == 'true') && (env.PYTHON_VERSION == '3.14'))
+          (github.event_name == 'push' && startsWith(github.ref, 'refs/tags')) || 
+          (steps.changes.outputs.needbuild == 'true' && env.PYTHON_VERSION == '3.14')
         run: |
           chmod +x tools/build-wheels.sh
           docker run --rm \
@@ -248,8 +248,8 @@ jobs:
               source /etc/bashrc
               /io/tools/build-wheels.sh
             "
-      - name: Archive wheel
-        uses: actions/upload-artifact@v6
+      - name: Archive wheels
+        uses: actions/upload-artifact@v7
         with:
           name: linux-wheels-${{ matrix.python-version }}-${{ matrix.cuda-version }}
           path: dist/*.whl
