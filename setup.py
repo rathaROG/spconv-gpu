@@ -32,10 +32,9 @@ else:
     deps = ["cumm>=0.8.4, <1.0.0"]
 
 DESCRIPTION = 'spatial sparse convolution'
-URL = 'https://github.com/traveller59/spconv'
-EMAIL = 'yanyan.sub@outlook.com'
-AUTHOR = 'Yan Yan'
-REQUIRES_PYTHON = '>=3.9'
+URL = 'https://github.com/rathaROG/spconv-gpu'
+AUTHOR = 'rathaROG'
+REQUIRES_PYTHON = '>=3.11'
 VERSION = None
 
 REQUIRED = ["pccm>=0.4.16", "ccimport>=0.4.4", "pybind11>=2.6.0", "fire", "numpy", *deps]
@@ -189,7 +188,6 @@ setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     author=AUTHOR,
-    author_email=EMAIL,
     python_requires=REQUIRES_PYTHON,
     url=URL,
     packages=find_packages(exclude=('tests', )),
