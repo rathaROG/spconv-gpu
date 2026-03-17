@@ -69,4 +69,5 @@ pip install git+https://github.com/rathaROG/spconv-gpu.git
 
 ## 📝 License
 
+[![NOTICE](https://img.shields.io/badge/NOTICE-Present-blue)](NOTICE)
 [![LICENSE](https://img.shields.io/badge/LICENSE-Apache_2.0-blue)](LICENSE)
