@@ -7,7 +7,7 @@ This repo is just a fork from `SpConv` — [Spatially Sparse Convolution library
 Before you install, you must uninstall all existing versions to avoid conflicts:
 
 ```bash
-pip uninstall -y spconv spconv-cu128 spconv-cu126 spconv-cu121 
+pip uninstall -y spconv spconv-cu130 spconv-cu128 spconv-cu126 spconv-cu121 
 ```
 
 For easy installation using prebuilt wheels (example for CUDA 13.0):
@@ -31,7 +31,7 @@ export CUMM_CUDA_VERSION="13.0"
 export CUMM_CUDA_ARCH_LIST="all"
 export CUMM_DISABLE_JIT="1"
 export SPCONV_DISABLE_JIT="1"
-export PIP_EXTRA_INDEX_URL="https://ratharog.github.io/cumm-spconv/"
+pip install cumm-cu130 --extra-index-url https://ratharog.github.io/cumm-spconv/
 pip install git+https://github.com/rathaROG/spconv-gpu.git
 ```
 
@@ -45,7 +45,7 @@ SET CUMM_CUDA_VERSION=13.0
 SET CUMM_CUDA_ARCH_LIST=all
 SET CUMM_DISABLE_JIT=1
 SET SPCONV_DISABLE_JIT=1
-SET PIP_EXTRA_INDEX_URL=https://ratharog.github.io/cumm-spconv/
+pip install cumm-cu130 --extra-index-url https://ratharog.github.io/cumm-spconv/
 pip install git+https://github.com/rathaROG/spconv-gpu.git
 ```
 
