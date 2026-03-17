@@ -37,16 +37,20 @@ pip install git+https://github.com/rathaROG/spconv-gpu.git
 
 ### On Windows with CUDA 13.0 + MSVC 2019 (cmd terminal):
 
+Due to unknown reasons, `pip install git+https://github.com/rathaROG/spconv-gpu.git` **often fails to build on Windows**. Building a wheel with [build](https://pypi.org/project/build/) and [wheel](https://pypi.org/project/wheel/) is more reliable:
+
 ```cmd
+pip install -U pybind11 pccm ccimport ninja build wheel
 git clone https://github.com/rathaROG/spconv-gpu.git
-spconv-gpu\tools\msvc_setup.bat
-RMDIR /s /q spconv-gpu
+cd spconv-gpu
+tools\msvc_setup.bat
 SET CUMM_CUDA_VERSION=13.0
 SET CUMM_CUDA_ARCH_LIST=all
 SET CUMM_DISABLE_JIT=1
 SET SPCONV_DISABLE_JIT=1
 pip install cumm-cu130 --extra-index-url https://ratharog.github.io/cumm-spconv/
-pip install git+https://github.com/rathaROG/spconv-gpu.git
+python -m build --wheel --skip-dependency-check --no-isolation
+for %f in (dist\*.whl) do pip install "%f"
 ```
 
 ### On any platform with CPU only:
