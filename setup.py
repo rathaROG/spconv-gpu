@@ -31,7 +31,7 @@ if cuda_ver:
 else:
     deps = ["cumm>=0.8.4, <1.0.0"]
 
-DESCRIPTION = 'spatial sparse convolution'
+DESCRIPTION = 'Spatial sparse convolution library'
 URL = 'https://github.com/rathaROG/spconv-gpu'
 AUTHOR = 'rathaROG'
 REQUIRES_PYTHON = '>=3.11'
