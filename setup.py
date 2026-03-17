@@ -199,7 +199,7 @@ setup(
     install_requires=REQUIRED,
     extras_require=EXTRAS,
     include_package_data=True,
-    license='Apache License 2.0',
+    license='Apache-2.0',
     classifiers=[
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
