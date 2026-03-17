@@ -32,14 +32,14 @@ export CUMM_CUDA_ARCH_LIST="all"
 # "/opt/python/cp36-cp36m/bin/pip" wheel /io/ --no-deps -w /io/wheelhouse_tmp
 
 # custom cumm-gpu https://github.com/rathaROG/cumm-gpu
-export PIP_EXTRA_INDEX_URL=https://ratharog.github.io/cumm-spconv/
+export PIP_EXTRA_INDEX_URL="https://ratharog.github.io/cumm-spconv/"
 
 for PYVER in ${SPCONV_PYTHON_LIST//;/ }
 do
     PYVER2=`echo "$PYVER" | sed 's/\.//'`
     PYVER_T=`echo "$PYVER2" | sed 's/\t//'`
     PYVER_CP="cp$PYVER_T-cp$PYVER2"
-    "/opt/python/$PYVER_CP/bin/pip" wheel /io/  -v --no-deps -w /io/wheelhouse_tmp
+    "/opt/python/$PYVER_CP/bin/pip" wheel /io/ -v --no-deps -w /io/wheelhouse_tmp
 done
 
 # Bundle external shared libraries into the wheels
