@@ -10,6 +10,7 @@ jobs:
   build-windows:
     runs-on: windows-latest
     strategy:
+      fail-fast: false
       matrix:
         python-version: ['3.11', '3.12', '3.13', '3.14'] 
         cuda-version: ['12.8', '13.0']
@@ -87,6 +88,7 @@ jobs:
   build-linux:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         python-version: ['3.11', '3.12', '3.13', '3.14']
         cuda-version: ['128', '']
@@ -184,6 +186,7 @@ jobs:
   build-linux-cu13x:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         python-version: ['3.11', '3.12', '3.13', '3.14']
         cuda-version: ['130']
