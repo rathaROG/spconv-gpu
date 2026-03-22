@@ -31,14 +31,14 @@ jobs:
           CUDA_VERSION: ${{ matrix.cuda-version }}
           PYTHON_VERSION: ${{ matrix.python-version }}
           cuda: ${{ matrix.cuda-version }}
-          BOOST_VERSION: boost_1_77_0
+          BOOST_VERSION: boost_1_79_0
         if: |
           (github.event_name == 'push' && startsWith(github.ref, 'refs/tags')) || 
           (steps.changes.outputs.needbuild == 'true' && env.PYTHON_VERSION == '3.14')
         shell: powershell
         run: |
           $ProgressPreference = 'SilentlyContinue'
-          Invoke-WebRequest -Uri "https://archives.boost.io/release/1.77.0/source/boost_1_77_0.zip" -UseBasicParsing -OutFile $HOME/boost.zip
+          Invoke-WebRequest -Uri "https://archives.boost.io/release/1.79.0/source/boost_1_79_0.zip" -UseBasicParsing -OutFile $HOME/boost.zip
           Expand-Archive $HOME/boost.zip -DestinationPath $HOME/boost
       - name: Install CUDA
         env:
@@ -65,7 +65,7 @@ jobs:
         env:
           CUDA_VERSION: ${{ matrix.cuda-version }}
           PYTHON_VERSION: ${{ matrix.python-version }}
-          BOOST_VERSION: boost_1_77_0
+          BOOST_VERSION: boost_1_79_0
           CUMM_CUDA_VERSION: ${{ matrix.cuda-version }}
         if: |
           (github.event_name == 'push' && startsWith(github.ref, 'refs/tags')) || 
@@ -75,7 +75,7 @@ jobs:
           $Env:SPCONV_DISABLE_JIT = "1"
           $Env:PIP_EXTRA_INDEX_URL = "https://ratharog.github.io/cumm-spconv/"
           python -m pip install pccm pybind11
-          $Env:BOOST_ROOT = "$HOME/boost/boost_1_77_0"
+          $Env:BOOST_ROOT = "$HOME/boost/boost_1_79_0"
           python -m build --wheel --outdir dist/ .
         shell: powershell
       - name: Archive wheels
@@ -117,13 +117,13 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install pep build
         env:
-          BOOST_VERSION: boost_1_77_0
+          BOOST_VERSION: boost_1_79_0
         run: |
           python -m pip install build --user
           python -m pip install --upgrade pip wheel setuptools
           # python -m pip install --upgrade twine pytest
           mkdir -p third_party
-          wget https://archives.boost.io/release/1.77.0/source/$BOOST_VERSION.zip -O third_party/boost.zip
+          wget https://archives.boost.io/release/1.79.0/source/$BOOST_VERSION.zip -O third_party/boost.zip
           unzip third_party/boost.zip -d third_party/boost
       - name: Build CUDA wheel
         env:
@@ -131,7 +131,7 @@ jobs:
           PYTHON_VERSION: ${{ matrix.python-version }}
           DOCKER_IMAGE: scrin/manylinux2014-cuda:cu${{ matrix.cuda-version }}-devel-1.0.0
           PLAT: ${{ matrix.cuda-version == '128' && 'manylinux_2_28_x86_64' || 'manylinux2014_x86_64' }}
-          BOOST_VERSION: boost_1_77_0
+          BOOST_VERSION: boost_1_79_0
         if: |
           env.CUDA_VERSION != '' && (
             (github.event_name == 'push' && startsWith(github.ref, 'refs/tags')) || 
@@ -156,7 +156,7 @@ jobs:
           PYTHON_VERSION: ${{ matrix.python-version }}
           DOCKER_IMAGE: scrin/manylinux2014-cuda:cu121-devel-1.0.0
           PLAT: manylinux2014_x86_64
-          BOOST_VERSION: boost_1_77_0
+          BOOST_VERSION: boost_1_79_0
         if: |
           env.CUDA_VERSION == '' && (
             (github.event_name == 'push' && startsWith(github.ref, 'refs/tags')) || 
@@ -214,13 +214,13 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install pep build
         env:
-          BOOST_VERSION: boost_1_77_0
+          BOOST_VERSION: boost_1_79_0
         run: |
           python -m pip install build --user
           python -m pip install --upgrade pip wheel setuptools
           # python -m pip install --upgrade twine pytest
           mkdir -p third_party
-          wget https://archives.boost.io/release/1.77.0/source/$BOOST_VERSION.zip -O third_party/boost.zip
+          wget https://archives.boost.io/release/1.79.0/source/$BOOST_VERSION.zip -O third_party/boost.zip
           unzip third_party/boost.zip -d third_party/boost
       - name: Build manylinux_2_28 cu${{ matrix.cuda-version }} image
         run: |
@@ -231,7 +231,7 @@ jobs:
           CUDA_VERSION: ${{ matrix.cuda-version }}
           PYTHON_VERSION: ${{ matrix.python-version }}
           PLAT: manylinux_2_28_x86_64
-          BOOST_VERSION: boost_1_77_0
+          BOOST_VERSION: boost_1_79_0
         if: |
           (github.event_name == 'push' && startsWith(github.ref, 'refs/tags')) || 
           (steps.changes.outputs.needbuild == 'true' && env.PYTHON_VERSION == '3.14')
