@@ -31,7 +31,7 @@ if cuda_ver:
     RELEASE_NAME += "-cu{}".format(cuda_ver_str)
     deps = ["cumm-cu{}>=0.8.5, <1.0.0".format(cuda_ver_str)]
 else:
-    deps = ["cumm>=0.8.5, <1.0.0"]
+    deps = ["cumm>=0.9.0, <1.0.0"]
 
 DESCRIPTION = 'Spatial sparse convolution library'
 URL = 'https://github.com/rathaROG/spconv-gpu'
