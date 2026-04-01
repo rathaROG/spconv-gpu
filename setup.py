@@ -19,27 +19,37 @@ from pccm.extension import ExtCallback, PCCMBuild, PCCMExtension
 from setuptools import Command, find_packages, setup
 from setuptools.extension import Extension
 from ccimport import compat
-import subprocess 
-import re 
+import subprocess
+import re
+
+from nvidia_arch import normalize_cuda_ver
 
 NAME = 'spconv'
 RELEASE_NAME = NAME
-deps = ["cumm"]
-cuda_ver = os.environ.get("CUMM_CUDA_VERSION", "")
-if cuda_ver:
-    cuda_ver_str = cuda_ver.replace(".", "")
-    RELEASE_NAME += "-cu{}".format(cuda_ver_str)
-    deps = ["cumm-cu{}>=0.8.5, <1.0.0".format(cuda_ver_str)]
+
+req_py = ""
+deps = []
+cuda_ver = normalize_cuda_ver(os.getenv("CUMM_CUDA_VERSION", None))
+if cuda_ver is not None and cuda_ver != "":
+    cuda_ver = cuda_ver.replace(".", "")
+    cuda_ver = cuda_ver[:3]
+    RELEASE_NAME += "-cu{}".format(cuda_ver)
+    if int(cuda_ver) >= 126:
+        deps = ["cumm-cu{}>=0.9.1,<1.0.0".format(cuda_ver)]
+        req_py = ">=3.11"
+    else:
+        deps = ["cumm-cu{}>=0.7.14,<0.8.0".format(cuda_ver)]
+        req_py = ">=3.9"
 else:
-    deps = ["cumm>=0.9.0, <1.0.0"]
+    deps = ["cumm>=0.9.1, <1.0.0"]
 
 DESCRIPTION = 'Spatial sparse convolution library'
 URL = 'https://github.com/rathaROG/spconv-gpu'
 AUTHOR = 'rathaROG'
-REQUIRES_PYTHON = '>=3.11'
+REQUIRES_PYTHON = req_py
 VERSION = None
 
-REQUIRED = ["pccm>=0.4.16", "ccimport>=0.4.4", "pybind11>=2.6.0", "fire", "numpy", *deps]
+REQUIRED = ["pccm>=0.4.16", "ccimport>=0.4.4", "pybind11>=2.6.0", "nvidia-arch>=7.0.0", "fire", "numpy", *deps]
 
 EXTRAS = {
     # 'fancy feature': ['django'],
@@ -138,19 +148,11 @@ if disable_jit is not None and disable_jit == "1":
     convcu = ConvMainUnitTest(all_imp)
     convcu.namespace = "cumm.conv.main"
     cu.namespace = "cumm.gemm.main"
+
     std = "c++17"
-    if cuda_ver:
-        cuda_ver_items = cuda_ver.split(".")
-        if len(cuda_ver_items) == 1:
-            cuda_ver_num = int(cuda_ver)
-            cuda_ver_tuple = (cuda_ver_num // 10, cuda_ver_num % 10)
-        else:
-            cuda_ver_vec = list(map(int, cuda_ver.split(".")))
-            cuda_ver_tuple = (cuda_ver_vec[0], cuda_ver_vec[1])
-        if cuda_ver_tuple[0] < 11:
-            std = "c++14" 
-        else:
-            std = "c++17"
+    if cuda_ver and int(cuda_ver) < 110:
+        std = "c++14"
+
     if not CUMM_CPU_ONLY_BUILD:
         gemmtuner = GemmTunerSimple(cu)
         gemmtuner.namespace = "csrc.sparse.convops.gemmops"
@@ -172,12 +174,14 @@ if disable_jit is not None and disable_jit == "1":
     if not CUMM_CPU_ONLY_BUILD:
         cus.extend([cu, convcu])
     ext_modules: List[Extension] = [
-        PCCMExtension(cus,
-                      "spconv/core_cc",
-                      Path(__file__).resolve().parent / "spconv",
-                      std=std,
-                      disable_pch=True,
-                      verbose=True)
+        PCCMExtension(
+            cus,
+            "spconv/core_cc",
+            Path(__file__).resolve().parent / "spconv",
+            std=std,
+            disable_pch=True,
+            verbose=True
+        )
     ]
 else:
     cmdclass = {'upload': UploadCommand,}
@@ -203,6 +207,8 @@ setup(
     classifiers=[
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
         'Programming Language :: Python :: 3.12',
         'Programming Language :: Python :: 3.13',

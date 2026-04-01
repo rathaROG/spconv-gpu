@@ -14,7 +14,7 @@ pip uninstall -y cumm cumm-cu130 cumm-cu128 cumm-cu126 cumm-cu121
 For easy installation using prebuilt wheels (example for CUDA 13.0):
 
 ```bash
-pip install cumm-cu130 spconv-cu130 --extra-index-url https://ratharog.github.io/cumm-spconv/
+pip install --extra-index-url https://ratharog.github.io/cumm-spconv/ cumm-cu130 spconv-cu130
 ```
 
 See [ratharog.github.io/cumm-spconv](https://ratharog.github.io/cumm-spconv/) for prebuilt wheel info and supported CUDA versions.
@@ -32,8 +32,8 @@ export CUMM_CUDA_VERSION="13.0"
 export CUMM_CUDA_ARCH_LIST="all"
 export CUMM_DISABLE_JIT="1"
 export SPCONV_DISABLE_JIT="1"
-pip install cumm-cu130 --extra-index-url https://ratharog.github.io/cumm-spconv/
-pip install git+https://github.com/rathaROG/spconv-gpu.git
+pip install --extra-index-url https://ratharog.github.io/cumm-spconv/ cumm-cu130
+pip install git+https://github.com/rathaROG/spconv-gpu.git --no-deps --no-build-isolation
 ```
 
 ### On Windows with CUDA 13.0 + MSVC 2019 (cmd terminal):
@@ -49,7 +49,7 @@ SET CUMM_CUDA_VERSION=13.0
 SET CUMM_CUDA_ARCH_LIST=all
 SET CUMM_DISABLE_JIT=1
 SET SPCONV_DISABLE_JIT=1
-pip install cumm-cu130 --extra-index-url https://ratharog.github.io/cumm-spconv/
+pip install --extra-index-url https://ratharog.github.io/cumm-spconv/ cumm-cu130
 python -m build --wheel --skip-dependency-check --no-isolation
 for %f in (dist\*.whl) do pip install "%f"
 ```
@@ -57,7 +57,8 @@ for %f in (dist\*.whl) do pip install "%f"
 ### On any platform with CPU only:
 
 ```bash
-pip install git+https://github.com/rathaROG/spconv-gpu.git
+pip install --extra-index-url https://ratharog.github.io/cumm-spconv/ cumm
+pip install git+https://github.com/rathaROG/spconv-gpu.git --no-deps --no-build-isolation
 ```
 
 **Note**: 

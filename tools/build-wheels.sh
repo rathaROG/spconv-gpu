@@ -1,50 +1,47 @@
 #!/bin/bash
-# Copyright 2021 Yan Yan
-# 
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-# 
-#     http://www.apache.org/licenses/LICENSE-2.0
-# 
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
 
-set -e -u -x
+# Modified by rathaROG in 2026.
+
+set -euxo pipefail
+
+PLAT=$(cat /etc/manylinux-platform-tag)
 
 function repair_wheel {
-    wheel="$1"
-    outpath="$2"
-    if ! auditwheel show "$wheel"; then
-        echo "Skipping non-platform wheel $wheel"
-    else
-        auditwheel repair "$wheel" --plat "$PLAT" -w "$outpath"
-    fi
+  wheel="$1"
+  outpath="$2"
+  if ! auditwheel show "$wheel"; then
+    echo "Skipping non-platform wheel $wheel"
+  else
+    auditwheel repair "$wheel" --plat "$PLAT" -w "$outpath"
+  fi
 }
+
 gcc -v
+
 export SPCONV_DISABLE_JIT="1"
 export CUMM_CUDA_ARCH_LIST="all"
-# export SPCONV_PYTHON_LIST="3.7;3.8;3.9;3.10"
-# Compile wheels, we only support 3.6-3.10.
-# "/opt/python/cp36-cp36m/bin/pip" wheel /io/ --no-deps -w /io/wheelhouse_tmp
 
-# custom cumm-gpu https://github.com/rathaROG/cumm-gpu
-export PIP_EXTRA_INDEX_URL="https://ratharog.github.io/cumm-spconv/"
+# custom index for cumm-gpu (release)
+# export PIP_EXTRA_INDEX_URL="https://ratharog.github.io/cumm-spconv/"
 
-for PYVER in ${SPCONV_PYTHON_LIST//;/ }
-do
-    PYVER2=`echo "$PYVER" | sed 's/\.//'`
-    PYVER_T=`echo "$PYVER2" | sed 's/\t//'`
-    PYVER_CP="cp$PYVER_T-cp$PYVER2"
-    "/opt/python/$PYVER_CP/bin/pip" wheel /io/ -v --no-deps -w /io/wheelhouse_tmp
+# custom index for cumm-gpu (pre-release)
+# export PIP_EXTRA_INDEX_URL="https://ratharog.github.io/cumm-spconv/pre-releases/"
+
+VERSIONS=$(echo "$BUILD_PYTHON_VERSIONS" | tr -d "[]'," )
+for pv in $VERSIONS; do
+  py_tag="cp${pv/./}"
+  PYBIN="/opt/python/${py_tag}-${py_tag}/bin"
+  "${PYBIN}/pip" install --upgrade pip
+  "${PYBIN}/pip" install --upgrade setuptools build wheel
+  "${PYBIN}/python" -m build --skip-dependency-check --sdist --wheel --outdir /io/wheelhouse_tmp /io/
 done
 
 # Bundle external shared libraries into the wheels
 for whl in /io/wheelhouse_tmp/*.whl; do
-    repair_wheel "$whl" /io/dist
+  repair_wheel "$whl" /io/dist
 done
+
+echo "Copying source distributions *.tar.gz to /io/dist ..."
+find /io/wheelhouse_tmp -maxdepth 1 -type f -name "*.tar.gz" -exec cp {} /io/dist/ \;
 
 rm -rf /io/wheelhouse_tmp

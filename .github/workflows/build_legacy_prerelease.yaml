@@ -1,0 +1,194 @@
+name: build legacy (pre-release)
+
+
+on:
+  workflow_dispatch:
+
+
+jobs:
+
+  linux-intel-cpu:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: legacy
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/share/powershell
+          sudo rm -rf /usr/local/share/chromium
+          docker system prune -af
+      - uses: dorny/paths-filter@v4
+        id: changes
+        with:
+          filters: |
+            needbuild:
+              - '.github/workflows/**'
+              - 'setup.py'
+              - 'spconv/csrc/**'
+              - 'spconv/algo.py'
+              - 'spconv/core.py'
+              - 'pyproject.toml'
+      - name: Prepare 3rd party dependencies
+        env:
+          BOOST_SRC_URL: "https://archives.boost.io/release/1.79.0/source/boost_1_79_0.zip"
+        run: |
+          mkdir -p third_party
+          wget $BOOST_SRC_URL -O third_party/boost.zip
+          unzip third_party/boost.zip -d third_party/boost
+      - name: Build wheel
+        env:
+          BOOST_VERSION: boost_1_79_0
+          BUILD_IMAGE: ratharog/manylinux_2_28_x86_64:cu130
+          BUILD_PYTHON_VERSIONS: "['3.9', '3.10', '3.11']"
+          # PIP_EXTRA_INDEX_URL: "https://ratharog.github.io/cumm-spconv/"
+          PIP_EXTRA_INDEX_URL: "https://ratharog.github.io/cumm-spconv/pre-releases/"
+        run: |
+          docker run --rm \
+            -e CUMM_CUDA_VERSION="" \
+            -e BUILD_PYTHON_VERSIONS="$BUILD_PYTHON_VERSIONS" \
+            -e BOOST_ROOT="/io/third_party/boost/$BOOST_VERSION" \
+            -e PIP_EXTRA_INDEX_URL="$PIP_EXTRA_INDEX_URL" \
+            -v "$(pwd)":/io \
+            $BUILD_IMAGE \
+            bash -c "source /etc/bashrc && /io/tools/build-wheels.sh"
+      - name: Archive wheels
+        uses: actions/upload-artifact@v7
+        with:
+          name: linux-intel-cpu-all
+          path: dist/*.whl
+
+  linux-intel-cu1xx:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        cuda-version: ['113', '121']
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: legacy
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/share/powershell
+          sudo rm -rf /usr/local/share/chromium
+          docker system prune -af
+      - uses: dorny/paths-filter@v4
+        id: changes
+        with:
+          filters: |
+            needbuild:
+              - '.github/workflows/**'
+              - 'setup.py'
+              - 'spconv/csrc/**'
+              - 'spconv/algo.py'
+              - 'spconv/core.py'
+              - 'pyproject.toml'
+      - name: Prepare 3rd party dependencies
+        env:
+          BOOST_SRC_URL: "https://archives.boost.io/release/1.79.0/source/boost_1_79_0.zip"
+        run: |
+          mkdir -p third_party
+          wget $BOOST_SRC_URL -O third_party/boost.zip
+          unzip third_party/boost.zip -d third_party/boost
+      - name: Build CUDA wheel
+        env:
+          CUDA_VERSION: ${{ matrix.cuda-version }}
+          BOOST_VERSION: boost_1_79_0
+          BUILD_IMAGE: ratharog/manylinux_2_28_x86_64:cu${{ matrix.cuda-version }}
+          BUILD_PYTHON_VERSIONS: "['3.9', '3.10', '3.11']"
+          # PIP_EXTRA_INDEX_URL: "https://ratharog.github.io/cumm-spconv/"
+          PIP_EXTRA_INDEX_URL: "https://ratharog.github.io/cumm-spconv/pre-releases/"
+        # if: matrix.cuda-version == '121'
+        run: |
+          docker run --rm \
+            -e CUMM_CUDA_VERSION="$CUDA_VERSION" \
+            -e BUILD_PYTHON_VERSIONS="$BUILD_PYTHON_VERSIONS" \
+            -e BOOST_ROOT="/io/third_party/boost/$BOOST_VERSION" \
+            -e PIP_EXTRA_INDEX_URL="$PIP_EXTRA_INDEX_URL" \
+            -v "$(pwd)":/io \
+            $BUILD_IMAGE \
+            bash -c "source /etc/bashrc && /io/tools/build-wheels.sh"
+      - name: Archive wheels
+        uses: actions/upload-artifact@v7
+        with:
+          name: linux-intel-cu${{ matrix.cuda-version }}-all
+          path: dist/*.whl
+
+  # # Requires Windows Server 2019 with Visual Studio 2019, 
+  # # which is not available in GitHub-hosted runners. 
+  # # Use self-hosted runners for this job if needed.
+  # windows-intel-all:
+  #   runs-on: windows-2019
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       python-version: ['3.9', '3.10', '3.11'] 
+  #       cuda-version: ['11.3', '12.1']
+  #   steps:
+  #      - uses: actions/checkout@v6
+  #        with:
+  #          ref: legacy
+  #     - uses: dorny/paths-filter@v4
+  #       id: changes
+  #       with:
+  #         filters: |
+  #           needbuild:
+  #             - '.github/workflows/**'
+  #             - 'setup.py'
+  #             - 'spconv/csrc/**'
+  #             - 'spconv/algo.py'
+  #             - 'spconv/core.py'
+  #             - 'pyproject.toml'
+  #     - name: Prepare 3rd party dependencies
+  #       env:
+  #         BOOST_SRC_URL: "https://archives.boost.io/release/1.79.0/source/boost_1_79_0.zip"
+  #       if: steps.changes.outputs.needbuild == 'true' && matrix.python-version == '3.11' && matrix.cuda-version == '12.1'
+  #       shell: powershell
+  #       run: |
+  #         $ProgressPreference = 'SilentlyContinue'
+  #         Invoke-WebRequest -Uri $env:BOOST_SRC_URL -UseBasicParsing -OutFile "$env:USERPROFILE\boost.zip"
+  #         Expand-Archive "$env:USERPROFILE\boost.zip" -DestinationPath "$env:USERPROFILE\boost"
+  #     - name: Install CUDA
+  #       env:
+  #         cuda: ${{ matrix.cuda-version }}
+  #       if: steps.changes.outputs.needbuild == 'true' && matrix.python-version == '3.11' && matrix.cuda-version == '12.1'
+  #       shell: powershell
+  #       run: |
+  #         .\tools\install_windows_cuda.ps1
+  #     - name: Set up Python ${{ matrix.python-version }}
+  #       uses: actions/setup-python@v6
+  #       with:
+  #         python-version: ${{ matrix.python-version }}
+  #     - uses: ilammy/msvc-dev-cmd@v1
+  #     - name: Install pep build
+  #       run: |
+  #         python -m pip install --upgrade pip
+  #         python -m pip install --upgrade build wheel setuptools
+  #     - name: Build wheel
+  #       env:
+  #         BOOST_VERSION: boost_1_79_0
+  #         CUMM_CUDA_VERSION: ${{ matrix.cuda-version }}
+  #         PIP_EXTRA_INDEX_URL: "https://ratharog.github.io/cumm-spconv/"
+  #       if: steps.changes.outputs.needbuild == 'true' && matrix.python-version == '3.11' && matrix.cuda-version == '12.1'
+  #       run: |
+  #         $env:CUMM_CUDA_ARCH_LIST = "all"
+  #         $env:SPCONV_DISABLE_JIT = "1"
+  #         $env:PIP_EXTRA_INDEX_URL = "$env:PIP_EXTRA_INDEX_URL"
+  #         $env:BOOST_ROOT = "$env:USERPROFILE\boost\$env:BOOST_VERSION"
+  #         python -m pip install pccm pybind11
+  #         python -m build --wheel --outdir dist/ .
+  #       shell: powershell
+  #     - name: Archive wheels
+  #       uses: actions/upload-artifact@v7
+  #       with:
+  #         name: windows-intel-cu${{ matrix.cuda-version }}-py${{ matrix.python-version }}
+  #         path: dist/*.whl

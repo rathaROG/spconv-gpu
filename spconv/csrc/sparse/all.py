@@ -31,6 +31,8 @@ from spconv.constants import SPCONV_DIRECT_TABLE_HASH_SIZE_SCALE, AllocKeys
 import re
 import os 
 from cumm.gemm.codeops import dispatch
+from nvidia_arch import normalize_cuda_ver
+
 class CustomThrustLib(pccm.Class):
     def __init__(self):
         super().__init__()
@@ -38,7 +40,6 @@ class CustomThrustLib(pccm.Class):
         # https://github.com/NVIDIA/thrust/issues/1401#issuecomment-806403746
         if compat.InLinux:
             self.build_meta.add_public_cflags("nvcc", "-Xcompiler -fno-gnu-unique", "-Xcompiler -fvisibility=hidden")
-
 
 class ThrustCustomAllocatorV2(pccm.Class, pccm.pybind.PybindClassMixin):
     def __init__(self):
@@ -132,16 +133,11 @@ class SpconvOps(pccm.Class):
         define_str = "\n".join(defines)
         self.add_global_code(define_str)
         self.build_meta.add_global_cflags("cl", "/DNOMINMAX")
-        cuda_ver = os.environ.get("CUMM_CUDA_VERSION", "")
-        if cuda_ver:
-            cuda_ver_items = cuda_ver.split(".")
-            if len(cuda_ver_items) == 1:
-                cuda_ver_num = int(cuda_ver)
-                cuda_ver_tuple = (cuda_ver_num // 10, cuda_ver_num % 10)
-            else:
-                cuda_ver_vec = list(map(int, cuda_ver.split(".")))
-                cuda_ver_tuple = (cuda_ver_vec[0], cuda_ver_vec[1])
-            if cuda_ver_tuple[0] < 11:
+        cuda_ver = normalize_cuda_ver(os.getenv("CUMM_CUDA_VERSION", None))
+        if cuda_ver is not None and cuda_ver != "":
+            cuda_ver = cuda_ver.replace(".", "")
+            cuda_ver = cuda_ver[:3]
+            if int(cuda_ver) < 110:
                 self.build_meta.add_global_cflags("nvcc", "-w")
 
         # for name in dir(AllocKeys):
