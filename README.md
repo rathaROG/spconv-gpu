@@ -25,6 +25,8 @@ Building from source requires:
 - A C++ compiler
 - CUDA Toolkit installed (for CUDA support)
 
+⚠️ If you need to build from source using the **[cumm-gpu](https://github.com/rathaROG/cumm-gpu) [legacy](https://github.com/rathaROG/cumm-gpu/tree/legacy) [v0.7](https://github.com/rathaROG/cumm-gpu/releases/tag/v0.7.14)** (for CUDA < 12.6, but with all important patches included as in the latest [cumm-gpu](https://github.com/rathaROG/cumm-gpu) [v0.9](https://github.com/rathaROG/cumm-gpu/releases/tag/v0.9.1)), **please checkout the [`legacy`](https://github.com/rathaROG/spconv-gpu/tree/legacy) branch of this repository instead**.
+
 ### On Linux with CUDA 13.0:
 
 ```bash

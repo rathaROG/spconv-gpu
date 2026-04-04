@@ -42,6 +42,7 @@ if cuda_ver is not None and cuda_ver != "":
         req_py = ">=3.9"
 else:
     deps = ["cumm>=0.9.1, <1.0.0"]
+    req_py = ">=3.9"
 
 DESCRIPTION = 'Spatial sparse convolution library'
 URL = 'https://github.com/rathaROG/spconv-gpu'

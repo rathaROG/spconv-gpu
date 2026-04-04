@@ -1,0 +1,67 @@
+name: build main cpu
+
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+
+jobs:
+
+
+  linux-intel-cpu:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.9', '3.10', '3.11', '3.12', '3.13', '3.14']
+    steps:
+      - uses: actions/checkout@v6
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/share/powershell
+          sudo rm -rf /usr/local/share/chromium
+          docker system prune -af
+      - uses: dorny/paths-filter@v4
+        id: changes
+        with:
+          filters: |
+            needbuild:
+              - '.github/workflows/**'
+              - 'setup.py'
+              - 'spconv/csrc/**'
+              - 'spconv/algo.py'
+              - 'spconv/core.py'
+              - 'pyproject.toml'
+      - name: Prepare 3rd party dependencies
+        env:
+          BOOST_SRC_URL: "https://archives.boost.io/release/1.79.0/source/boost_1_79_0.zip"
+        run: |
+          mkdir -p third_party
+          wget $BOOST_SRC_URL -O third_party/boost.zip
+          unzip third_party/boost.zip -d third_party/boost
+      - name: Build wheel
+        env:
+          BOOST_VERSION: boost_1_79_0
+          BUILD_IMAGE: ratharog/manylinux_2_28_x86_64:cu130
+          BUILD_PYTHON_VERSIONS: "['${{ matrix.python-version }}']"
+          PIP_EXTRA_INDEX_URL: "https://ratharog.github.io/cumm-spconv/"
+        run: |
+          docker run --rm \
+            -e CUMM_CUDA_VERSION="" \
+            -e BUILD_PYTHON_VERSIONS="$BUILD_PYTHON_VERSIONS" \
+            -e BOOST_ROOT="/io/third_party/boost/$BOOST_VERSION" \
+            -e PIP_EXTRA_INDEX_URL="$PIP_EXTRA_INDEX_URL" \
+            -v "$(pwd)":/io \
+            $BUILD_IMAGE \
+            bash -c "source /etc/bashrc && /io/tools/build-wheels.sh"
+      - name: Archive wheels
+        uses: actions/upload-artifact@v7
+        with:
+          name: linux-intel-cpu-py${{ matrix.python-version }}
+          path: dist/*.whl
