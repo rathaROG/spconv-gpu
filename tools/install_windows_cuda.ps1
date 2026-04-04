@@ -6,9 +6,21 @@
 
 # Dictionary of known cuda versions and thier download URLS, which do not follow a consistent pattern :(
 $CUDA_KNOWN_URLS = @{
-    "12.6" = "https://developer.download.nvidia.com/compute/cuda/12.6.3/network_installers/cuda_12.6.3_windows_network.exe";
-    "12.8" = "https://developer.download.nvidia.com/compute/cuda/12.8.1/network_installers/cuda_12.8.1_windows_network.exe";
-    "13.0" = "https://developer.download.nvidia.com/compute/cuda/13.0.2/network_installers/cuda_13.0.2_windows_network.exe";
+    "11.0" = "http://developer.download.nvidia.com/compute/cuda/11.0.3/network_installers/cuda_11.0.3_win10_network.exe";
+    "11.1" = "https://developer.download.nvidia.com/compute/cuda/11.1.1/network_installers/cuda_11.1.1_win10_network.exe";
+    "11.2" = "https://developer.download.nvidia.com/compute/cuda/11.2.2/network_installers/cuda_11.2.2_win10_network.exe";
+    "11.3" = "https://developer.download.nvidia.com/compute/cuda/11.3.1/network_installers/cuda_11.3.1_win10_network.exe";
+    "11.4" = "https://developer.download.nvidia.com/compute/cuda/11.4.4/network_installers/cuda_11.4.4_win10_network.exe";
+    "11.5" = "https://developer.download.nvidia.com/compute/cuda/11.5.2/network_installers/cuda_11.5.2_win10_network.exe";
+    "11.6" = "https://developer.download.nvidia.com/compute/cuda/11.6.2/network_installers/cuda_11.6.2_windows_network.exe";
+    "11.7" = "https://developer.download.nvidia.com/compute/cuda/11.7.1/network_installers/cuda_11.7.1_windows_network.exe";
+    "11.8" = "https://developer.download.nvidia.com/compute/cuda/11.8.0/network_installers/cuda_11.8.0_windows_network.exe";
+    "12.0" = "https://developer.download.nvidia.com/compute/cuda/12.0.1/network_installers/cuda_12.0.1_windows_network.exe";
+    "12.1" = "https://developer.download.nvidia.com/compute/cuda/12.1.1/network_installers/cuda_12.1.1_windows_network.exe";
+    "12.2" = "https://developer.download.nvidia.com/compute/cuda/12.2.2/network_installers/cuda_12.2.2_windows_network.exe";
+    "12.3" = "https://developer.download.nvidia.com/compute/cuda/12.3.2/network_installers/cuda_12.3.2_windows_network.exe";
+    "12.4" = "https://developer.download.nvidia.com/compute/cuda/12.4.1/network_installers/cuda_12.4.1_windows_network.exe";
+    "12.5" = "https://developer.download.nvidia.com/compute/cuda/12.5.1/network_installers/cuda_12.5.1_windows_network.exe";
 }
 
 # cuda_runtime.h is in nvcc <= 10.2, but cudart >= 11.0
@@ -51,15 +63,6 @@ if ((([int]$CUDA_MAJOR -eq 11) -and ([int]$CUDA_MINOR -ge 4)) -or ([int]$CUDA_MA
     $CUDA_PACKAGES_IN += @(
         "cuxxfilt";
         "thrust";
-    )
-}
-
-# Additional components for CUDA 13.0 and later
-if ([int]$CUDA_MAJOR -ge 13) {
-    $CUDA_PACKAGES_IN += @(
-        "crt";
-        "nvvm";
-        "nvptxcompiler"
     )
 }
 
